@@ -66,10 +66,6 @@ def generate_parallel_light_mask(mask_size,
     # add median blur
     mask = cv2.medianBlur(mask, 9)
     mask = 255 - mask
-    # cv2.circle(mask, init_light_pos, 1, (0, 0, 255))
-    # cv2.imshow("crop", mask[init_mask_ul[1]:init_mask_br[1], init_mask_ul[0]:init_mask_br[0]])
-    # cv2.imshow("all", mask)
-    # cv2.waitKey(0)
     return mask 
 
 
