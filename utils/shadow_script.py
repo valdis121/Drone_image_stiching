@@ -1,3 +1,4 @@
+#Author Kyryl Serediuk
 from shadow import add_spot_light, add_parallel_light
 from shadow2 import shadow_V
 import os 

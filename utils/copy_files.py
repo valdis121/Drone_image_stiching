@@ -1,3 +1,4 @@
+#Author Vladyslav Varfolomeiev
 import os
 import shutil
 import sys

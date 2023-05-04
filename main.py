@@ -1,3 +1,5 @@
+#Author Vladyslav Varfolomeiev
+
 import cv2
 import numpy as np
 import sys
@@ -29,7 +31,6 @@ def warpImages(img1, img2, H):
 
     list_of_points = np.concatenate((list_of_points_1, list_of_points_2), axis=0)
 
-    ##Define boundaries:
     [x_min, y_min] = np.int32(list_of_points.min(axis=0).ravel() - 0.5)
     [x_max, y_max] = np.int32(list_of_points.max(axis=0).ravel() + 0.5)
 
@@ -40,7 +41,6 @@ def warpImages(img1, img2, H):
     output_img = cv2.warpPerspective(img2,
                                      H_translation.dot(H),
                                      (x_max - x_min, y_max - y_min))
-    ## Paste the image:
     output_img[translation_dist[1]:rows1 + translation_dist[1],
     translation_dist[0]:cols1 + translation_dist[0]] = img1
 
@@ -50,22 +50,18 @@ def warpImages(img1, img2, H):
 def warp(img1, img2, matcher, detector_name, min_match_count=10):
     if detector_name == "sift":
         sift = cv2.SIFT_create()
-        # Extract the keypoints and descriptors
         keypoints1, descriptors1 = sift.detectAndCompute(img1, None)
         keypoints2, descriptors2 = sift.detectAndCompute(img2, None)
     elif detector_name == "orb":
         orb = cv2.ORB_create()
-        # Extract the keypoints and descriptors
         keypoints1, descriptors1 = orb.detectAndCompute(img1, None)
         keypoints2, descriptors2 = orb.detectAndCompute(img2, None)
     elif detector_name == "akaza":
         akaze = cv2.AKAZE_create()
-        # Extract the keypoints and descriptors
         keypoints1, descriptors1 = akaze.detectAndCompute(img1, None)
         keypoints2, descriptors2 = akaze.detectAndCompute(img2, None)
     else:
         raise Exception("Sorry, don't valid detector")
-    # Initialize parameters for Flann based matcher
     FLANN_INDEX_KDTREE = 0
     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     search_params = dict(checks=50)
@@ -77,33 +73,24 @@ def warp(img1, img2, matcher, detector_name, min_match_count=10):
     else:
         raise Exception("Sorry, don't valid matcher")
 
-    # Compute the matches
     matches = fl.knnMatch(descriptors1, descriptors2, k=2)
 
-    # Store all the good matches as per Lowe's ratio test
     good_matches = []
     for m1, m2 in matches:
         if m1.distance < 0.7 * m2.distance:
             good_matches.append(m1)
+    src_pts = np.float32([keypoints1[good_match.queryIdx].pt
+                          for good_match in good_matches]).reshape(-1, 1, 2)
 
-    if len(good_matches) >= min_match_count:
-        src_pts = np.float32([keypoints1[good_match.queryIdx].pt
-                              for good_match in good_matches]).reshape(-1, 1, 2)
+    dst_pts = np.float32([keypoints2[good_match.trainIdx].pt
+                          for good_match in good_matches]).reshape(-1, 1, 2)
 
-        dst_pts = np.float32([keypoints2[good_match.trainIdx].pt
-                              for good_match in good_matches]).reshape(-1, 1, 2)
-
-        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
-        result = warpImages(img2, img1, M)
-        return result
-    else:
-        print("We don't have enough number of matches between the two images.")
-        print("Found only " + str(len(good_matches)) + " matches.")
-        print("We need at least " + str(min_match_count) + " matches.")
+    M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+    result = warpImages(img2, img1, M)
+    return result
 
 
 def save_image(directory, file_name, image):
-    #     check directory is exist and create if not exit
     print("ok")
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -129,7 +116,6 @@ def stitch_image_in_sub_directory(input_directory, output_directory, matcher="fl
                 for index, item in enumerate(filenames):
                     if index == 0:
                         continue
-
                     main_image = cv2.imread(os.path.join(dirname, filenames[index]))
 
                     print('{}. Stitching {} AND {} in process'.format(index, previous_image, filenames[index]))

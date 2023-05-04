@@ -1,3 +1,4 @@
+#Author Kyryl Serediuk
 from PIL import Image, ImageEnhance
 import random
 import numpy as np

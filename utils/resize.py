@@ -1,3 +1,4 @@
+#Author Kyryl Serediuk
 import cv2
 import os
 import sys
